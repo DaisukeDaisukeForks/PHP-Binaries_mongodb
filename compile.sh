@@ -1138,7 +1138,11 @@ cd "$BUILD_DIR"
 write_done
 
 echo -n "  mongo: downloading mongo..."
-git clone --depth 1 --recurse-submodules https://github.com/mongodb/mongo-php-driver.git "$BUILD_DIR/php/ext/mongodb" >> "$DIR/install.log" 2>&1
+git clone https://github.com/mongodb/mongo-php-driver.git "$BUILD_DIR/php/ext/mongodb" >> "$DIR/install.log" 2>&1
+cd "$BUILD_DIR/php/ext/mongodb"
+git checkout v2.0 >> "$DIR/install.log" 2>&1
+git submodule update --init --recursive >> "$DIR/install.log" 2>&1
+cd "$BUILD_DIR"
 write_done
 
 get_github_extension "leveldb" "$EXT_LEVELDB_VERSION" "pmmp" "php-leveldb"
