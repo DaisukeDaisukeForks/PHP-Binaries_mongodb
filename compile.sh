@@ -604,7 +604,7 @@ function build_mongodb {
 
 	write_configure
 	"$INSTALL_DIR/bin/phpize" >> "$DIR/install.log" 2>&1
-	./configure --with-php-config="$INSTALL_DIR/bin/php-config" >> "$DIR/install.log" 2>&1
+	./configure --with-php-config="$INSTALL_DIR/bin/php-config" --prefix="$INSTALL_DIR" >> "$DIR/install.log" 2>&1
 
 	write_compile
 	make -j "$THREADS" >> "$DIR/install.log" 2>&1
@@ -1343,7 +1343,6 @@ $HAVE_MYSQLI \
 --enable-xxhash \
 --enable-arraydebug \
 --enable-encoding \
---enable-mongodb \
 $HAVE_VALGRIND \
 $CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
 write_compile
