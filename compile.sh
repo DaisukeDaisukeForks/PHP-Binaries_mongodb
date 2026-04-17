@@ -36,6 +36,7 @@ EXT_MORTON_VERSION="0.1.2"
 EXT_XXHASH_VERSION="0.2.0"
 EXT_ARRAYDEBUG_VERSION="0.2.1"
 EXT_ENCODING_VERSION="1.0.0"
+EXT_MONGODB_REF="v2.1"
 
 EXT_IGBINARY_VERSION_PHP85="3.2.17RC1"
 
@@ -588,6 +589,35 @@ download_github_src "php/php-src" "php-$PHP_VERSION" "php" | tar -zx >> "$DIR/in
 mv php-src-php-$PHP_VERSION php
 write_done
 
+function build_mongodb {
+	write_library "mongodb" "$EXT_MONGODB_REF"
+
+	local mongodb_dir="$BUILD_DIR/mongodb"
+
+	write_download
+	git clone https://github.com/mongodb/mongo-php-driver.git "$mongodb_dir" >> "$DIR/install.log" 2>&1
+
+	cd "$mongodb_dir"
+
+	git checkout "$EXT_MONGODB_REF" >> "$DIR/install.log" 2>&1
+	git submodule update --init --recursive >> "$DIR/install.log" 2>&1
+
+	write_configure
+	"$INSTALL_DIR/bin/phpize" >> "$DIR/install.log" 2>&1
+	./configure --with-php-config="$INSTALL_DIR/bin/php-config" >> "$DIR/install.log" 2>&1
+
+	write_compile
+	make -j "$THREADS" >> "$DIR/install.log" 2>&1
+
+	write_install
+	make install >> "$DIR/install.log" 2>&1
+
+	echo "extension=mongodb.so" >> "$INSTALL_DIR/bin/php.ini"
+
+	cd "$BUILD_DIR"
+	write_done
+}
+
 function build_zlib {
 	if [ "$DO_STATIC" == "yes" ]; then
 		local EXTRA_FLAGS="--static"
@@ -1137,14 +1167,6 @@ git submodule update --init --recursive >> "$DIR/install.log" 2>&1
 cd "$BUILD_DIR"
 write_done
 
-echo -n "  mongo: downloading mongo..."
-git clone https://github.com/mongodb/mongo-php-driver.git "$BUILD_DIR/php/ext/mongodb" >> "$DIR/install.log" 2>&1
-cd "$BUILD_DIR/php/ext/mongodb"
-git checkout v2.0 >> "$DIR/install.log" 2>&1
-git submodule update --init --recursive >> "$DIR/install.log" 2>&1
-cd "$BUILD_DIR"
-write_done
-
 get_github_extension "leveldb" "$EXT_LEVELDB_VERSION" "pmmp" "php-leveldb"
 
 get_github_extension "chunkutils2" "$EXT_CHUNKUTILS2_VERSION" "pmmp" "ext-chunkutils2"
@@ -1423,6 +1445,8 @@ if [[ "$COMPILE_TARGET" == "mac-"* ]]; then
 fi
 
 write_done
+
+build_mongodb
 
 if [[ "$HAVE_XDEBUG" == "yes" ]]; then
 	get_github_extension "xdebug" "$EXT_XDEBUG_VERSION" "xdebug" "xdebug"
